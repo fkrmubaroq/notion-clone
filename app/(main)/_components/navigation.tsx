@@ -1,10 +1,14 @@
 "use client";
 
+import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
-import { ChevronsLeft, MenuIcon } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { ChevronsLeft, MenuIcon, PlusCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useMediaQuery } from "usehooks-ts";
+import NavigationItem from "./navigation-item";
 import UserItem from "./user-item";
 
 export default function Navigation() {
@@ -12,10 +16,41 @@ export default function Navigation() {
   const isResizingRef = useRef(false);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const documents = useQuery(api.documents.get);
+  const create = useMutation(api.documents.create);
+
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
+
+  const resetWidth = useCallback(() => {
+    if (sidebarRef.current && navbarRef.current) {
+      setIsCollapsed(false);
+      setIsResetting(true);
+      sidebarRef.current.style.width = isMobile ? "100%" : "260px";
+      navbarRef.current.style.setProperty(
+        "width",
+        isMobile ? "0" : "calc(100% - 260px)"
+      );
+      navbarRef.current.style.setProperty("left", isMobile ? "100%" : "260px");
+      setTimeout(() => setIsResetting(false), 300);
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (isMobile) {
+      onCollapse();
+    } else {
+      resetWidth();
+    }
+  }, [isMobile, resetWidth]);
+
+  useEffect(() => {
+    if (isMobile) {
+      onCollapse();
+    }
+  }, [pathname, isMobile]);
 
   const handleMouseDown = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -31,7 +66,7 @@ export default function Navigation() {
   const handleMouseMove = (event: MouseEvent) => {
     if (!isResizingRef.current) return;
     let newWidth = event.clientX;
-    if (newWidth < 240) newWidth = 240;
+    if (newWidth < 260) newWidth = 260;
     if (newWidth > 480) newWidth = 480;
 
     if (sidebarRef.current && navbarRef.current) {
@@ -50,19 +85,6 @@ export default function Navigation() {
     document.removeEventListener("mouseup", handleMouseUp);
   };
 
-  const resetWidth = useCallback(() => {
-    if (sidebarRef.current && navbarRef.current) {
-      setIsCollapsed(false);
-      setIsResetting(true);
-      sidebarRef.current.style.width = isMobile ? "100%" : "240px";
-      navbarRef.current.style.setProperty(
-        "width",
-        isMobile ? "0" : "calc(100% - 240px)"
-      );
-      navbarRef.current.style.setProperty("left", isMobile ? "100%" : "240px");
-      setTimeout(() => setIsResetting(false), 300);
-    }
-  },[isMobile])
 
   const onCollapse = () => {
     if (sidebarRef.current && navbarRef.current) {
@@ -76,19 +98,19 @@ export default function Navigation() {
     }
   };
 
-  useEffect(() => {
-    if (isMobile) {
-      onCollapse();
-    } else {
-      resetWidth();
-    }
-  }, [isMobile, resetWidth]);
 
-  useEffect(() => {
-    if (isMobile) {
-      onCollapse();
-    }
-  }, [pathname, isMobile]);
+  const handleCreate = () => {
+    const promise = create({
+      title: "Untitled"
+    });
+
+    toast.promise(promise, {
+      loading: "Creating a new note...",
+      success: "New note created!",
+      error: "Failed to create a new note",
+    })
+
+  }
 
   return (
     <>
@@ -98,7 +120,7 @@ export default function Navigation() {
           "group/sidebar h-full bg-secondary",
           "overflow-y-auto relative flex w-60 flex-col z-[9999]",
           {
-            "transition-all ease-in-out duration-200": isResetting,
+            "transition-all ease-in-out duration-500": isResetting,
             "w-0": isMobile,
           }
         )}
@@ -113,14 +135,19 @@ export default function Navigation() {
             isMobile && "opacity-100"
           )}
         >
-          <ChevronsLeft className="size-6" />
+          <ChevronsLeft className="size-5 text-gray-400" />
         </div>
         <div>
           <UserItem />
+          <NavigationItem
+            onClick={handleCreate}
+            label="New page"
+            icon={PlusCircle}
+          />
         </div>
 
         <div className="mt-4 ">
-          <p>Documents</p>
+          {documents?.map((document, key) => <p key={key}>{document.title}</p>)}
         </div>
 
         <div
@@ -128,14 +155,14 @@ export default function Navigation() {
           onDoubleClick={resetWidth}
           className={cn(
             "opacity-0 group-hover/sidebar:opacity-100 transition ",
-            "cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0"
+            "cursor-ew-resize absolute h-full w-[2px] bg-primary/10 right-0 top-0"
           )}
         />
       </aside>
       <div
         ref={navbarRef}
-        className={cn("absolute top-0 z-[9999] left-60 w-[calc(100%-240px)]", {
-          "transition-all ease-in-out duration-300": isResetting,
+        className={cn("absolute top-0 z-[9999] left-60 w-[calc(100%-260px)]", {
+          "transition-all ease-in-out duration-500": isResetting,
           "left-0 w-full": isMobile,
         })}
       >
