@@ -3,12 +3,12 @@
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 import { useMutation, useQuery } from "convex/react";
-import { ChevronsLeft, MenuIcon, PlusCircle } from "lucide-react";
+import { ChevronsLeft, MenuIcon, PlusCircle, Search, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useMediaQuery } from "usehooks-ts";
-import NavigationItem from "./navigation-item";
+import Item from "./item";
 import UserItem from "./user-item";
 
 export default function Navigation() {
@@ -139,7 +139,20 @@ export default function Navigation() {
         </div>
         <div>
           <UserItem />
-          <NavigationItem
+          <Item
+            label="Search"
+            icon={Search}
+            isSearch
+            onClick={() => { }}
+          />
+
+          <Item
+            label="Settings"
+            icon={Settings}
+            onClick={() => { }}
+          />
+
+          <Item
             onClick={handleCreate}
             label="New page"
             icon={PlusCircle}
