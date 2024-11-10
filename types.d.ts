@@ -13,3 +13,9 @@ export type NavigationItemProps = {
   onClick: () => void;
   icon: LucideIcon
 }
+
+export type DocumentListProps = {
+  parentDocumentId?: Id<"documents">;
+  level?: number;
+  data?: Doc<"documents">[]
+}
