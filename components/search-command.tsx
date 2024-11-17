@@ -3,7 +3,6 @@
 import { api } from "@/convex/_generated/api";
 import { useSearchStore } from "@/hooks/use-search";
 import useSensorKeyboard from "@/hooks/use-sensor-keyboard";
-import { useUser } from "@clerk/clerk-react";
 import { useQuery } from "convex/react";
 import { File } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,7 +18,6 @@ import {
 } from "./ui/command";
 
 export default function SearchCommand() {
-  const { user } = useUser();
   const router = useRouter();
   const documents = useQuery(api.documents.getSearch);
   const [isMounted, setIsMounted] = useState(false);
@@ -34,7 +32,7 @@ export default function SearchCommand() {
 
   useSensorKeyboard(
     ["k"],
-    (key) => {
+    () => {
       toggle();
     },
     { usingCtrl: true }

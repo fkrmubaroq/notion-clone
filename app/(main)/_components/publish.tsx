@@ -11,14 +11,12 @@ import useOrigin from "@/hooks/use-origin";
 import { PublishProps } from "@/types";
 import { useMutation } from "convex/react";
 import { Check, Copy, Globe } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function Publish({ initialData }: PublishProps) {
   const origin = useOrigin();
   const update = useMutation(api.documents.update);
-  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const url = `${origin}/preview/${initialData._id}`;

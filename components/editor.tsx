@@ -32,7 +32,7 @@ export default function Editor({ editable, onChange, initialContent }: EditorPro
       editable={editable}
       editor={editor}
       onChange={() => {
-        onChange && onChange(JSON.stringify(editor.document));
+        onChange?.(JSON.stringify(editor.document));
       }}
       theme={resolvedTheme === "dark" ? "dark" : "light"}
     />
