@@ -62,6 +62,7 @@ export default function DocumentList({
       {documents.map((document) => (
         <div key={document._id}>
           <Item
+            isDocument={true}
             id={document._id}
             onClick={() => onRedirect(document._id)}
             label={document.title}

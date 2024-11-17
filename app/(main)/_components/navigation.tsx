@@ -1,18 +1,39 @@
 "use client";
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { api } from "@/convex/_generated/api";
+import { useSearchStore } from "@/hooks/use-search";
+import { useSettingsStore } from "@/hooks/use-settings-store";
 import { cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
-import { ChevronsLeft, MenuIcon, PlusCircle, Search, Settings } from "lucide-react";
-import { usePathname } from "next/navigation";
+import {
+  ChevronsLeft,
+  MenuIcon,
+  Plus,
+  PlusCircle,
+  Search,
+  Settings,
+  Trash2,
+} from "lucide-react";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { ElementRef, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useMediaQuery } from "usehooks-ts";
 import DocumentList from "./document-list";
 import Item from "./item";
+import Navbar from "./navbar";
+import { TrashBox } from "./trash-box";
 import UserItem from "./user-item";
 
 export default function Navigation() {
+  const router = useRouter();
+  const settings = useSettingsStore();
+  const search = useSearchStore();
+  const params = useParams();
   const pathname = usePathname();
   const isResizingRef = useRef(false);
 
@@ -85,7 +106,6 @@ export default function Navigation() {
     document.removeEventListener("mouseup", handleMouseUp);
   };
 
-
   const onCollapse = () => {
     if (sidebarRef.current && navbarRef.current) {
       setIsCollapsed(true);
@@ -98,19 +118,19 @@ export default function Navigation() {
     }
   };
 
-
   const handleCreate = () => {
     const promise = create({
-      title: "Untitled"
+      title: "Untitled",
+    }).then((documentId) => {
+      router.push(`/documents/${documentId}`);
     });
 
     toast.promise(promise, {
       loading: "Creating a new note...",
       success: "New note created!",
       error: "Failed to create a new note",
-    })
-
-  }
+    });
+  };
 
   return (
     <>
@@ -139,28 +159,30 @@ export default function Navigation() {
         </div>
         <div>
           <UserItem />
-          <Item
-            label="Search"
-            icon={Search}
-            isSearch
-            onClick={() => { }}
-          />
+          <Item label="Search" icon={Search} isSearch onClick={search.onOpen} />
 
-          <Item
-            label="Settings"
-            icon={Settings}
-            onClick={() => { }}
-          />
+          <Item label="Settings" icon={Settings} onClick={settings.onOpen} />
 
-          <Item
-            onClick={handleCreate}
-            label="New page"
-            icon={PlusCircle}
-          />
+          <Item onClick={handleCreate} label="New page" icon={PlusCircle} />
         </div>
 
         <div className="mt-4 ">
-            <DocumentList />
+          <div className="text-xs px-4 text-slate-400 font-semibold mb-1">
+            Private
+          </div>
+          <DocumentList />
+          <Item onClick={handleCreate} label="Add a page" icon={Plus} />
+          <Popover>
+            <PopoverTrigger className="w-full mt-4">
+              <Item label="Trash" icon={Trash2} />
+            </PopoverTrigger>
+            <PopoverContent
+              className="p-0 w-96"
+              side={isMobile ? "bottom" : "right"}
+            >
+              <TrashBox />
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div
@@ -179,15 +201,19 @@ export default function Navigation() {
           "left-0 w-full": isMobile,
         })}
       >
-        <nav className="bg-transparent px-3 py-2 w-full">
-          {isCollapsed && (
-            <MenuIcon
-              onClick={resetWidth}
-              role="button"
-              className="size-7 text-muted-foreground"
-            />
-          )}
-        </nav>
+        {!!params.documentId ? (
+          <Navbar isCollapsed={isCollapsed} onResetWidth={resetWidth} />
+        ) : (
+          <nav className="bg-transparent px-3 py-2 w-full">
+            {isCollapsed && (
+              <MenuIcon
+                onClick={resetWidth}
+                role="button"
+                className="size-7 text-muted-foreground"
+              />
+            )}
+          </nav>
+        )}
       </div>
     </>
   );

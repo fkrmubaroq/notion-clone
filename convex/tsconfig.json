@@ -20,6 +20,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["./**/*"],
+  "include": ["./**/*", "../hooks/use-settings.ts"],
   "exclude": ["./_generated"]
 }
